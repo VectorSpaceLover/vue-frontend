@@ -19,6 +19,7 @@ export default {
     },
     myUser() {
       if (this.isLoggedIn) {
+        console.log(this.$auth.user)
         return this.$auth.user
       } else {
         return { uuid: null }

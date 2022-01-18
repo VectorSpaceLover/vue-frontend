@@ -1,223 +1,328 @@
 <template>
-<div v-if="isLoading === false" class='pa-6 mh-100v'>
-  <div class="d-flex flex-row">
-      <div class="d-flex flex-column">
-            <div div>{{$data.hcfa.hcfaTitle.pNo}}</div>
-            <div>{{$data.hcfa.hcfaTitle.line1}}</div>
-            <div>{{$data.hcfa.hcfaTitle.line2}}</div>
-      </div>
-      <div class="d-flex flex-row ml-auto">
-            <v-btn
-                depressed
-                color="primary"
-                @click="export2xml"
-            >
-                Export Xml
-            </v-btn>
+<div class="pa-6">
+    <div class="d-flex flex-row justify-center mb-5">
+        <div class="d-flex flex-row align-center" style="width: 350px">
+            <v-autocomplete
+                v-model="currentName"
+                :items="patientList"
+                item-text='user_last_name'
+                item-value="user_uuid"
+                return-object
+                rounded
+                clearable
+                solo
+                :hide-details = true
+            ></v-autocomplete>
             <v-btn
                 style="margin-left: 10px"
                 depressed
                 color="primary"
-                @click="savehcfa"
+                @click="openHcfa"
             >
-                Save
+                Open
             </v-btn>
-      </div>
+        </div>
+    </div>
+    <div v-if="isLoading === false" class='mh-100v'>
+    <div class="d-flex flex-row">
+        <div class="d-flex flex-column">
+                <div div>{{$data.hcfa.hcfaTitle.pNo}}</div>
+                <div>{{$data.hcfa.hcfaTitle.line1}}</div>
+                <div>{{$data.hcfa.hcfaTitle.line2}}</div>
+        </div>
+        <div class="d-flex flex-row ml-auto">
+                <v-btn
+                    depressed
+                    color="primary"
+                    @click="export2xml"
+                >
+                    Export Xml
+                </v-btn>
+                <v-btn
+                    style="margin-left: 10px"
+                    depressed
+                    color="primary"
+                    @click="savehcfa"
+                >
+                    Save
+                </v-btn>
+        </div>
 
-  </div>
-  <div class="hcfa-container">
-        <!-- Line 1 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                    <div class="d-flex flex-row justify-space-around">
-                        <div v-for='(item, i) in line1' :key="'line1' + i">
+    </div>
+    <div class="hcfa-container">
+            <!-- Line 1 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                        <div class="d-flex flex-row justify-space-around">
+                            <div v-for='(item, i) in line1' :key="'line1' + i">
 
-                            <p v-if="i === 0">{{`1. ${item.name}`}}</p>
-                            <p v-else>{{item.name}}</p>
-                            <v-checkbox v-model="number1[i]"
-                                :false-value="0"
-                                :true-value="1"
-                                :label="`${item.checkValue}`"
-                                @change="checkNumber1(i)"></v-checkbox>
-                        </div>
-                    </div>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <div class="d-flex">
-                    <div>1a. INSURED'S I.D.NUMBER</div>
-                    <div class="ml-auto">(For Program in Item 1)</div>
-                </div>
-                <v-text-field v-model="number1[number1.length - 1]" placeholder="enter" type="text" :hide-details = true :value="`${number1[number1.length - 1]}`"></v-text-field>
-            </v-col>
-        </v-row>
-        <!-- Line 2 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col
-                        cols="7"
-                        sm="7"
-                        md="7"
-                    >
-                        <p>2. PATIENT'S NAME(Last Name, First Name, Middle Initial)</p>
-                        <v-text-field v-model="number2.patientName" placeholder="patient name" type="text" :hide-details = true :value="`${number2.patientName}`"></v-text-field>
-                    </v-col>
-
-                    <v-col
-                        cols="5"
-                        sm="5"
-                        md="5"
-                        class="lb-1"
-                    >
-                        <v-row>3. PATIENT'S BIRTH DATE</v-row>
-                        <v-row>
-                            <v-col 
-                                cols="2"
-                                md="2"
-                                sm="2"
-                                class="p-0"
-                            >
-                                <p>MM</p>
-                                <v-text-field v-model="number3.mm" placeholder="mm" type="text" :hide-details = true :value="`${number3.mm}`"></v-text-field>
-                            </v-col>
-                            <v-col 
-                                cols="1"
-                                md="1"
-                                sm="1"
-                                class="p-0"
-                            >
-                                <p>DD</p>
-                                <v-text-field v-model="number3.dd" placeholder="dd" type="text" :hide-details = true :value="`${number3.dd}`"></v-text-field>
-                            </v-col>
-                            <v-col
-                                cols="4"
-                                md="4"
-                                sm="4"
-                                class="p-0"
-                            >
-                                <p>YY</p>
-                                <v-text-field v-model="number3.yy" placeholder="yy" type="text" :hide-details = true :value="`${number3.yy}`"></v-text-field>
-                            </v-col>
-                            <v-col
-                                cols="5"
-                                md="5"
-                                sm="5"
-                                class="p-0"
-                            >
-                                <v-row class="justify-center">SEX</v-row>
-                                <v-row class="d-flex justify-space-around">
-                                    <div class="d-flex flex-row align-center">
-                                        <p>M</p>
-                                        <v-checkbox v-model="number3.sex.male"
-                                            :false-value="0"
-                                            :true-value="1"
-                                            :hide-details = true
-                                            @change="checkNumber3(0)"
-                                        >
-                                        </v-checkbox>
-                                    </div>
-                                    <div class="d-flex flex-row align-center">
-                                        <p>F</p>
-                                        <v-checkbox v-model="number3.sex.female"
-                                            :false-value="0"
-                                            :true-value="1"
-                                            :hide-details = true
-                                            @change="checkNumber3(1)"
-                                        >
-                                        </v-checkbox>
-                                    </div>
-                                    
-                                </v-row>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <p>4. INSURED'S NAME(Last Name, First Name, Middle Initial)</p>
-                <v-text-field v-model="number4.insuredName" placeholder="insured's name" type="text" :hide-details = true :value="`${number4.insuredName}`"></v-text-field>
-            </v-col>
-        </v-row>
-        <!-- Line 3 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col
-                        cols="7"
-                        sm="7"
-                        md="7"
-                    >
-                        <p>5. PATIENT'S ADDRESS(No., Street)</p>
-                        <v-text-field v-model="number5.patientAddress" placeholder="patient address" type="text" :hide-details = true :value="`${number5.patientAddress}`"></v-text-field>
-                    </v-col>
-
-                    <v-col
-                        cols="5"
-                        sm="5"
-                        md="5"
-                        class="lb-1"
-                        style="display: flex; flex-direction: column;"
-                    >
-                        <v-row>{{$data.hcfa.hcfaTitle.line6}}</v-row>
-                        <v-row>
-                            <v-col v-for="(item, i) in line6" :key="'line6' + i" class = 'p-0'>
-                                <v-checkbox v-model="number6[i]"
+                                <p v-if="i === 0">{{`1. ${item.name}`}}</p>
+                                <p v-else>{{item.name}}</p>
+                                <v-checkbox v-model="number1[i]"
                                     :false-value="0"
                                     :true-value="1"
-                                    :hide-details = true
-                                    :label="item.checkValue"
-                                    @change="checkNumber6(i)"
-                                >
-                                </v-checkbox>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-            </v-col>
+                                    :label="`${item.checkValue}`"
+                                    @change="checkNumber1(i)"></v-checkbox>
+                            </div>
+                        </div>
+                </v-col>
 
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <p>7. INSURED'S ADDRESS(No., Street)</p>
-                <v-text-field v-model="number7.insuredAddress" placeholder="insured's address" type="text" :hide-details = true :value="`${number7.insuredAddress}`"></v-text-field>
-            </v-col>
-        </v-row>
-        <!-- Line 4 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col cols = '7' md = '7' sm = '7'>
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <div class="d-flex">
+                        <div>1a. INSURED'S I.D.NUMBER</div>
+                        <div class="ml-auto">(For Program in Item 1)</div>
+                    </div>
+                    <v-text-field v-model="number1[number1.length - 1]" placeholder="enter" type="text" :hide-details = true :value="`${number1[number1.length - 1]}`"></v-text-field>
+                </v-col>
+            </v-row>
+            <!-- Line 2 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col
+                            cols="7"
+                            sm="7"
+                            md="7"
+                        >
+                            <p>2. PATIENT'S NAME(Last Name, First Name, Middle Initial)</p>
+                            <v-text-field v-model="number2.patientName" placeholder="patient name" type="text" :hide-details = true :value="`${number2.patientName}`"></v-text-field>
+                        </v-col>
+
+                        <v-col
+                            cols="5"
+                            sm="5"
+                            md="5"
+                            class="lb-1"
+                        >
+                            <v-row>3. PATIENT'S BIRTH DATE</v-row>
+                            <v-row>
+                                <v-col 
+                                    cols="2"
+                                    md="2"
+                                    sm="2"
+                                    class="p-0"
+                                >
+                                    <p>MM</p>
+                                    <v-text-field v-model="number3.mm" placeholder="mm" type="text" :hide-details = true :value="`${number3.mm}`"></v-text-field>
+                                </v-col>
+                                <v-col 
+                                    cols="1"
+                                    md="1"
+                                    sm="1"
+                                    class="p-0"
+                                >
+                                    <p>DD</p>
+                                    <v-text-field v-model="number3.dd" placeholder="dd" type="text" :hide-details = true :value="`${number3.dd}`"></v-text-field>
+                                </v-col>
+                                <v-col
+                                    cols="4"
+                                    md="4"
+                                    sm="4"
+                                    class="p-0"
+                                >
+                                    <p>YY</p>
+                                    <v-text-field v-model="number3.yy" placeholder="yy" type="text" :hide-details = true :value="`${number3.yy}`"></v-text-field>
+                                </v-col>
+                                <v-col
+                                    cols="5"
+                                    md="5"
+                                    sm="5"
+                                    class="p-0"
+                                >
+                                    <v-row class="justify-center">SEX</v-row>
+                                    <v-row class="d-flex justify-space-around">
+                                        <div class="d-flex flex-row align-center">
+                                            <p>M</p>
+                                            <v-checkbox v-model="number3.sex.male"
+                                                :false-value="0"
+                                                :true-value="1"
+                                                :hide-details = true
+                                                @change="checkNumber3(0)"
+                                            >
+                                            </v-checkbox>
+                                        </div>
+                                        <div class="d-flex flex-row align-center">
+                                            <p>F</p>
+                                            <v-checkbox v-model="number3.sex.female"
+                                                :false-value="0"
+                                                :true-value="1"
+                                                :hide-details = true
+                                                @change="checkNumber3(1)"
+                                            >
+                                            </v-checkbox>
+                                        </div>
+                                        
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <p>4. INSURED'S NAME(Last Name, First Name, Middle Initial)</p>
+                    <!-- <v-text-field v-model="number4.insuredName" placeholder="insured's name" type="text" :hide-details = true :value="`${number4.insuredName}`" :readonly="true"></v-text-field> -->
+                    <p class="pt-5 bb-1">{{$data.number4.insuredName}}</p>
+                </v-col>
+            </v-row>
+            <!-- Line 3 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col
+                            cols="7"
+                            sm="7"
+                            md="7"
+                        >
+                            <p>5. PATIENT'S ADDRESS(No., Street)</p>
+                            <v-text-field v-model="number5.patientAddress" placeholder="patient address" type="text" :hide-details = true :value="`${number5.patientAddress}`"></v-text-field>
+                        </v-col>
+
+                        <v-col
+                            cols="5"
+                            sm="5"
+                            md="5"
+                            class="lb-1"
+                            style="display: flex; flex-direction: column;"
+                        >
+                            <v-row>{{$data.hcfa.hcfaTitle.line6}}</v-row>
+                            <v-row>
+                                <v-col v-for="(item, i) in line6" :key="'line6' + i" class = 'p-0'>
+                                    <v-checkbox v-model="number6[i]"
+                                        :false-value="0"
+                                        :true-value="1"
+                                        :hide-details = true
+                                        :label="item.checkValue"
+                                        @change="checkNumber6(i)"
+                                    >
+                                    </v-checkbox>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <p>7. INSURED'S ADDRESS(No., Street)</p>
+                    <!-- <v-text-field v-model="number7.insuredAddress" placeholder="insured's address" type="text" :hide-details = true :value="`${number7.insuredAddress}`"></v-text-field> -->
+                    <p class="pt-5 bb-1">{{$data.number7.insuredAddress}}</p>
+                </v-col>
+            </v-row>
+            <!-- Line 4 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col cols = '7' md = '7' sm = '7'>
+                            <v-row>
+                                <v-col
+                                    cols="10"
+                                    md="10"
+                                    sm="10"
+                                >
+                                    <p>CITY</p>
+                                    <v-text-field v-model="number5.patientCity" placeholder="state" type="text" :hide-details = true :value="`${number5.patientCity}`"></v-text-field>
+                                </v-col>
+
+                                <v-col
+                                    cols="2"
+                                    md="2"
+                                    sm="2"
+                                    class="lb-1"
+                                >
+                                    <p>STATE</p>
+                                    <v-text-field v-model="number5.patientState" placeholder="state" type="text" :hide-details = true :value="`${number5.patientState}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col
+                                    cols="4"
+                                    md="4"
+                                    sm="4"
+                                >
+                                    <p>ZIP CODE</p>
+                                    <v-text-field v-model="number5.patientZipcode" placeholder="zip code" type="text" :hide-details = true :value="`${number5.patientZipcode}`"></v-text-field>
+                                </v-col>
+
+                                <v-col
+                                    cols="8"
+                                    md="8"
+                                    sm="8"
+                                    class="lb-1"
+                                >
+                                    <p>TELEPHONE (Include Area Code)</p>
+                                    <v-text-field v-model="number5.patientTelephone" placeholder="telephone" type="text" :hide-details = true :value="`${number5.patientTelephone}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+
+                        <v-col cols = '5' md = '5' sm = '5' class="lb-1" style="display: flex; flex-direction: column;">
+                            <v-row class="mt-4">{{$data.hcfa.hcfaTitle.line8}}</v-row>
+                            <v-row>
+                                <v-col v-for="(item, i) in line8.first" :key="'line8' + i" class = 'p-none'>
+                                    <v-checkbox v-model="number8[i]"
+                                        :false-value="0"
+                                        :true-value="1"
+                                        :hide-details = true
+                                        :label="item.checkValue"
+                                        @change="checkNumber8(i)"
+                                    >
+                                    </v-checkbox>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col v-for="(item, i) in line8.second" :key="'line8' + i + 3" class = 'p-none'>
+                                    <v-checkbox v-model="number8[i + 3]"
+                                        :false-value="0"
+                                        :true-value="1"
+                                        :hide-details = true
+                                        :label="item.checkValue"
+                                        @change="checkNumber8(i + 3)"
+                                    >
+                                    </v-checkbox>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <v-col>
                         <v-row>
                             <v-col
                                 cols="10"
@@ -225,7 +330,8 @@
                                 sm="10"
                             >
                                 <p>CITY</p>
-                                <v-text-field v-model="number5.patientCity" placeholder="state" type="text" :hide-details = true :value="`${number5.patientCity}`"></v-text-field>
+                                <!-- <v-text-field v-model="number7.insuredCity" placeholder="state" type="text" :hide-details = true :value="`${number7.insuredCity}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number7.insuredCity}}</p>
                             </v-col>
 
                             <v-col
@@ -235,7 +341,8 @@
                                 class="lb-1"
                             >
                                 <p>STATE</p>
-                                <v-text-field v-model="number5.patientState" placeholder="state" type="text" :hide-details = true :value="`${number5.patientState}`"></v-text-field>
+                                <!-- <v-text-field v-model="number7.insuredState" placeholder="state" type="text" :hide-details = true :value="`${number7.insuredState}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number7.insuredState}}</p>
                             </v-col>
                         </v-row>
                         <v-row>
@@ -245,7 +352,8 @@
                                 sm="4"
                             >
                                 <p>ZIP CODE</p>
-                                <v-text-field v-model="number5.patientZipcode" placeholder="zip code" type="text" :hide-details = true :value="`${number5.patientZipcode}`"></v-text-field>
+                                <!-- <v-text-field v-model="number7.insuredZipcode" placeholder="zip code" type="text" :hide-details = true :value="`${number7.insuredZipcode}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number7.insuredZipcode}}</p>
                             </v-col>
 
                             <v-col
@@ -255,135 +363,559 @@
                                 class="lb-1"
                             >
                                 <p>TELEPHONE (Include Area Code)</p>
-                                <v-text-field v-model="number5.patientTelephone" placeholder="telephone" type="text" :hide-details = true :value="`${number5.patientTelephone}`"></v-text-field>
+                                <!-- <v-text-field v-model="number7.insuredTelephone" placeholder="telephone" type="text" :hide-details = true :value="`${number5.insuredTelephone}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number7.insuredTelephone}}</p>
                             </v-col>
                         </v-row>
                     </v-col>
-
-                    <v-col cols = '5' md = '5' sm = '5' class="lb-1" style="display: flex; flex-direction: column;">
-                        <v-row class="mt-4">{{$data.hcfa.hcfaTitle.line8}}</v-row>
-                        <v-row>
-                            <v-col v-for="(item, i) in line8.first" :key="'line8' + i" class = 'p-none'>
-                                <v-checkbox v-model="number8[i]"
-                                    :false-value="0"
-                                    :true-value="1"
-                                    :hide-details = true
-                                    :label="item.checkValue"
-                                    @change="checkNumber8(i)"
-                                >
-                                </v-checkbox>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col v-for="(item, i) in line8.second" :key="'line8' + i + 3" class = 'p-none'>
-                                <v-checkbox v-model="number8[i + 3]"
-                                    :false-value="0"
-                                    :true-value="1"
-                                    :hide-details = true
-                                    :label="item.checkValue"
-                                    @change="checkNumber8(i + 3)"
-                                >
-                                </v-checkbox>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <v-col>
+                </v-col>
+            </v-row>
+            <!-- Line 5 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
                     <v-row>
-                        <v-col
-                            cols="10"
-                            md="10"
-                            sm="10"
-                        >
-                            <p>CITY</p>
-                            <v-text-field v-model="number7.insuredCity" placeholder="state" type="text" :hide-details = true :value="`${number7.insuredCity}`"></v-text-field>
+                        <v-col cols = '7' md = '7' sm = '7'>
+                            <v-row>
+                                <v-col>
+                                    <p>9. OTHER INSURED'S NAME(Last name, First Name, Middle Initial)</p>
+                                    <v-text-field v-model="number9.value" placeholder="other insured's name" type="text" :hide-details = true :value="`${number9.value}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+
+                            <v-row>
+                                <v-col>
+                                    <p>a. OTHER INSURED'S POLICY OR GROUP NUMBER</p>
+                                    <v-text-field v-model="number9.a" placeholder="other insured's policy or group number" type="text" :hide-details = true :value="`${number9.a}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+
+                            <v-row>
+                                <v-col>
+                                    <p>b. OTHER INSURED'S DATE OF BIRTH</p>
+                                    <v-row>
+                                        <v-col 
+                                            cols="2"
+                                            md="2"
+                                            sm="2"
+                                            class="p-0"
+                                        >
+                                            <p>MM</p>
+                                            <v-text-field v-model="number9.b.mm" placeholder="mm" type="text" :hide-details = true :value="`${number9.b.mm}`"></v-text-field>
+                                        </v-col>
+                                        <v-col 
+                                            cols="1"
+                                            md="1"
+                                            sm="1"
+                                            class="p-0"
+                                        >
+                                            <p>DD</p>
+                                            <v-text-field v-model="number9.b.dd" placeholder="dd" type="text" :hide-details = true :value="`${number9.b.dd}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="4"
+                                            md="4"
+                                            sm="4"
+                                            class="p-0"
+                                        >
+                                            <p>YY</p>
+                                            <v-text-field v-model="number9.b.yy" placeholder="yy" type="text" :hide-details = true :value="`${number9.b.yy}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="5"
+                                            md="5"
+                                            sm="5"
+                                            class="p-0"
+                                        >
+                                            <v-row class="justify-center">SEX</v-row>
+                                            <v-row class="d-flex justify-space-around">
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>M</p>
+                                                    <v-checkbox v-model="number9.b.sex.male"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber9(0)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>F</p>
+                                                    <v-checkbox v-model="number9.b.sex.female"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber9(1)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                
+                                            </v-row>
+                                        </v-col>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+
+                            <v-row>
+                                <v-col>
+                                    <p>c. EMPLOYER'S NAME OR SCHOOL NAME</p>
+                                    <v-text-field v-model="number9.c" placeholder="other insured's policy or group number" type="text" :hide-details = true :value="`${number9.c}`"></v-text-field>
+                                </v-col>
+                            </v-row>
                         </v-col>
 
-                        <v-col
-                            cols="2"
-                            md="2"
-                            sm="2"
-                            class="lb-1"
-                        >
-                            <p>STATE</p>
-                            <v-text-field v-model="number7.insuredState" placeholder="state" type="text" :hide-details = true :value="`${number7.insuredState}`"></v-text-field>
+                        <v-col cols = '5' md = '5' sm = '5' class="lb-1" style="display: flex; flex-direction: column;">
+                            <v-row class="mt-4">{{$data.hcfa.hcfaTitle.line10}}</v-row>
+                            <v-text-field v-model="number10.value" placeholder="enter" type="text" :hide-details = true :value="`${number10.value}`"></v-text-field>
+                            <v-row>
+                                <v-col class = 'p-0'>
+                                    <v-row>{{line10[0].value}}</v-row>
+                                    <v-row align="center">
+                                        <v-checkbox v-model="number10.a.yes"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="Yes"
+                                            @change="checkNumber10(0)"
+                                        >
+                                        </v-checkbox>
+                                        <v-checkbox v-model="number10.a.no"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="No"
+                                            @change="checkNumber10(1)"
+                                        >
+                                        </v-checkbox>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col class = 'p-0'>
+                                    <v-row>{{line10[1].value}}</v-row>
+                                    <v-row align="center">
+                                        <v-checkbox v-model="number10.b.yes"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="Yes"
+                                            @change="checkNumber10(2)"
+                                        >
+                                        </v-checkbox>
+                                        <v-checkbox v-model="number10.b.no"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="No"
+                                            @change="checkNumber10(3)"
+                                        >
+                                        </v-checkbox>
+                                        <div class = 'ml-auto'>
+                                            <div class="flex flex-column p-none">
+                                                <div class="f-11">PLACE (State)</div>
+                                                <v-text-field v-model="number10.b.place" placeholder="enter" type="text" :hide-details = true :value="`${number10.b.place}`"></v-text-field>
+                                            </div>
+                                        </div>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col class = 'p-0'>
+                                    <v-row>{{line10[2].value}}</v-row>
+                                    <v-row align="center">
+                                        <v-checkbox v-model="number10.c.yes"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="Yes"
+                                            @change="checkNumber10(4)"
+                                        >
+                                        </v-checkbox>
+
+                                        <v-checkbox v-model="number10.c.no"
+                                            :false-value="0"
+                                            :true-value="1"
+                                            :hide-details = true
+                                            label="No"
+                                            @change="checkNumber10(5)"
+                                        >
+                                        </v-checkbox>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
                         </v-col>
                     </v-row>
-                    <v-row>
-                        <v-col
-                            cols="4"
-                            md="4"
-                            sm="4"
-                        >
-                            <p>ZIP CODE</p>
-                            <v-text-field v-model="number7.insuredZipcode" placeholder="zip code" type="text" :hide-details = true :value="`${number7.insuredZipcode}`"></v-text-field>
-                        </v-col>
+                    
+                </v-col>
 
-                        <v-col
-                            cols="8"
-                            md="8"
-                            sm="8"
-                            class="lb-1"
-                        >
-                            <p>TELEPHONE (Include Area Code)</p>
-                            <v-text-field v-model="number7.insuredTelephone" placeholder="telephone" type="text" :hide-details = true :value="`${number5.insuredTelephone}`"></v-text-field>
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <v-row>
+                        <v-col>
+                            <v-row>
+                                <v-col>
+                                    <p>11. INSURED'S POLICY GROUP OR FECA NUMBER</p>
+                                    <v-text-field v-model="number11.value" placeholder="other insured's name" type="text" :hide-details = true :value="`${number11.value}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col>
+                                    <p>a. INSURED'S DATE OF BIRTH</p>
+                                    <v-row>
+                                        <v-col 
+                                            cols="2"
+                                            md="2"
+                                            sm="2"
+                                            class="p-0"
+                                        >
+                                            <p>MM</p>
+                                            <v-text-field v-model="number11.a.mm" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.mm}`"></v-text-field>
+                                        </v-col>
+                                        <v-col 
+                                            cols="1"
+                                            md="1"
+                                            sm="1"
+                                            class="p-0"
+                                        >
+                                            <p>DD</p>
+                                            <v-text-field v-model="number11.a.dd" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.dd}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="4"
+                                            md="4"
+                                            sm="4"
+                                            class="p-0"
+                                        >
+                                            <p>YY</p>
+                                            <v-text-field v-model="number11.a.yy" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.yy}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="5"
+                                            md="5"
+                                            sm="5"
+                                            class="p-0"
+                                        >
+                                            <v-row class="justify-center">SEX</v-row>
+                                            <v-row class="d-flex justify-space-around">
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>M</p>
+                                                    <v-checkbox v-model="number11.a.sex.male"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber11(0)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>F</p>
+                                                    <v-checkbox v-model="number11.a.sex.female"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber11(1)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                
+                                            </v-row>
+                                        </v-col>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col>
+                                    <p>b. EMPLOYER'S NAME OR SCHOOL NAME</p>
+                                    <v-text-field v-model="number11.b" placeholder="mm" type="text" :hide-details = true :value="`${number11.b}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+
+                            <v-row>
+                                <v-col>
+                                    <p>c. INSURANCE PLAN NAME OR PROGRAM NAME</p>
+                                    <v-text-field v-model="number11.c" placeholder="mm" type="text" :hide-details = true :value="`${number11.c}`"></v-text-field>
+                                </v-col>
+                            </v-row>
                         </v-col>
                     </v-row>
                 </v-col>
-            </v-col>
-        </v-row>
-        <!-- Line 5 -->
-         <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col cols = '7' md = '7' sm = '7'>
+            </v-row>
+            <!-- Line 6 -->
+                <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col
+                            cols="7"
+                            sm="7"
+                            md="7"
+                        >
+                            <p>d. INSURANCE PLAN NAME OR PROGRAM NAME</p>
+                            <v-text-field v-model="number9.d" placeholder="patient name" type="text" :hide-details = true :value="`${number9.d}`"></v-text-field>
+                        </v-col>
+
+                        <v-col
+                            cols="5"
+                            sm="5"
+                            md="5"
+                            class="lb-1"
+                        >
+                            <p>10d. RESERVED FOR LOCAL USE</p>
+                            <v-text-field v-model="number10.d" placeholder="patient name" type="text" :hide-details = true :value="`${number10.d}`"></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <div class="d-flex flex-column align-start">
+                        <p>d. IS THERE ANOTHER HEALTH BENEFIT PLAN?</p>
+                        <div class="d-flex flex-row align-center">
+                            <v-checkbox v-model="number11.d.yes"
+                                :false-value="0"
+                                :true-value="1"
+                                :hide-details = true
+                                label="Yes"
+                                @change="checkNumber11(2)"
+                            >
+                            </v-checkbox>
+                            <v-checkbox v-model="number11.d.no"
+                                :false-value="0"
+                                :true-value="1"
+                                :hide-details = true
+                                label="No"
+                                @change="checkNumber11(3)"
+                            >
+                            </v-checkbox>
+                            <span class="f-11 ml-auto"><b>If yes</b>, return to and complete item 9 a-d</span>
+                        </div>
+                    </div>
+                    
+                </v-col>
+            </v-row>
+            <!-- Line 7 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >   
+                    <b>READ BACK OF FORM BEFORE COMPLETING & SIGNING THIS FORM</b>
+                    <p>12. PATIENT'S OR AUTHORIZED PERSON'S SIGNATURE I authorize the release of any medical or other information necessary to process this claim. I also request payment of government benefits either to myself or to the party who accepts assignment below</p>
+                    <div class="d-flex align-center">
                         <v-row>
-                            <v-col>
-                                <p>9. OTHER INSURED'S NAME(Last name, First Name, Middle Initial)</p>
-                                <v-text-field v-model="number9.value" placeholder="other insured's name" type="text" :hide-details = true :value="`${number9.value}`"></v-text-field>
+                            <v-col cols="8" md = '8' sm = '8'>
+                                <div class="d-flex flex-direction-row align-center">
+                                    <div class="mr-2">SIGNED</div>
+                                    <v-text-field v-model="number12.signed" placeholder="signed" type="text" :hide-details = true :value="`${number12.signed}`"></v-text-field>
+                                </div>
+                            </v-col>
+                            <v-col cols="4" md = '4' sm = '4'>
+                                <div class="d-flex flex-direction-row align-center">
+                                    <div class="mr-2">DATE</div>
+                                    <v-text-field v-model="number12.date" placeholder="date" type="text" :hide-details = true :value="`${number12.date}`"></v-text-field>
+                                </div>
                             </v-col>
                         </v-row>
+                    </div>
+                </v-col>
 
-                        <v-row>
-                            <v-col>
-                                <p>a. OTHER INSURED'S POLICY OR GROUP NUMBER</p>
-                                <v-text-field v-model="number9.a" placeholder="other insured's policy or group number" type="text" :hide-details = true :value="`${number9.a}`"></v-text-field>
-                            </v-col>
-                        </v-row>
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <p>13. INSURED'S OR AUTHORIZED PERSON'S SIGNATURE I authorize payment of medical benefits to the undersigned physician or supplier for services described below.</p>
+                    <div class="d-flex flex-direction-row align-center">
+                        <div class="mr-2">SIGNED</div>
+                        <v-text-field v-model="number13.value" placeholder="signed" type="text" :hide-details = true :value="`${number13.value}`"></v-text-field>
+                    </div>
+                </v-col>
+            </v-row>
+            <!-- Line 8 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col
+                            cols="7"
+                            sm="7"
+                            md="7"
+                        >
+                            <v-row>
+                                <v-col cols="7" md = '7' sm = '7'>
+                                    <p>14. DATE OF CURRENT:</p>
+                                    <v-row>
+                                        <v-col 
+                                            cols="2"
+                                            md="2"
+                                            sm="2"
+                                            class="p-0"
+                                        >
+                                            <p>MM</p>
+                                            <v-text-field v-model="number14.mm" placeholder="mm" type="text" :hide-details = true :value="`${number14.mm}`"></v-text-field>
+                                        </v-col>
+                                        <v-col 
+                                            cols="2"
+                                            md="2"
+                                            sm="2"
+                                            class="p-0"
+                                        >
+                                            <p>DD</p>
+                                            <v-text-field v-model="number14.dd" placeholder="dd" type="text" :hide-details = true :value="`${number14.dd}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="4"
+                                            md="4"
+                                            sm="4"
+                                            class="p-0"
+                                        >
+                                            <p>YY</p>
+                                            <v-text-field v-model="number14.yy" placeholder="yy" type="text" :hide-details = true :value="`${number14.yy}`"></v-text-field>
+                                        </v-col>
+                                        <v-col
+                                            cols="4"
+                                            md="4"
+                                            sm="4"
+                                            class="p-0"
+                                        >
+                                            <v-row class="justify-center">SEX</v-row>
+                                            <v-row class="d-flex justify-space-around">
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>M</p>
+                                                    <v-checkbox v-model="number14.sex.male"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber14(0)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                <div class="d-flex flex-row align-center">
+                                                    <p>F</p>
+                                                    <v-checkbox v-model="number14.sex.female"
+                                                        :false-value="0"
+                                                        :true-value="1"
+                                                        :hide-details = true
+                                                        @change="checkNumber14(1)"
+                                                    >
+                                                    </v-checkbox>
+                                                </div>
+                                                
+                                            </v-row>
+                                        </v-col>
+                                    </v-row>
+                                </v-col>
+                                <v-col cols="5" md = '5' sm = '5' class="lb-1">
+                                    <p>ILLNESS (First symptom) OR</p>
+                                    <p>INJURY (Accident) OR</p>
+                                    <p>PREGNANCY (LMP) OR</p>
+                                </v-col>
+                            </v-row>
+                        </v-col>
 
+                        <v-col
+                            cols="5"
+                            sm="5"
+                            md="5"
+                            class="lb-1"
+                        >
+                            <p>15. IF PATIENT HAS HAD SAME OR SIMILAR ILLNESS</p>
+                            <v-row align="center">
+                                <v-col 
+                                    cols="4"
+                                    md="4"
+                                    sm="4"
+                                    class="p-0"
+                                >
+                                    <span>GIVE FIRST DATE</span>
+                                </v-col>
+                                <v-col 
+                                    cols="2"
+                                    md="2"
+                                    sm="2   "
+                                    class="p-0"
+                                >
+                                    <p>MM</p>
+                                    <v-text-field v-model="number15.mm" placeholder="mm" type="text" :hide-details = true :value="`${number15.mm}`"></v-text-field>
+                                </v-col>
+                                <v-col 
+                                    cols="2"
+                                    md="2"
+                                    sm="2"
+                                    class="p-0"
+                                >
+                                    <p>DD</p>
+                                    <v-text-field v-model="number15.dd" placeholder="dd" type="text" :hide-details = true :value="`${number15.dd}`"></v-text-field>
+                                </v-col>
+                                <v-col
+                                    cols="4"
+                                    md="4"
+                                    sm="4"
+                                    class="p-0"
+                                >
+                                    <p>YY</p>
+                                    <v-text-field v-model="number15.yy" placeholder="yy" type="text" :hide-details = true :value="`${number15.yy}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <div class="d-flex flex-column align-start">
+                        <p>16. DATES PATIENT UNABLE TO WORK IN CURRENT OCCUPATION</p>
                         <v-row>
-                            <v-col>
-                                <p>b. OTHER INSURED'S DATE OF BIRTH</p>
-                                <v-row>
+                            <v-col cols="6" md='6' sm='6'>
+                                <v-row align="center">
+                                    <v-col 
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
+                                    >
+                                        <span>FROM</span>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2   "
+                                        class="p-0"
+                                    >
+                                        <p>MM</p>
+                                        <v-text-field v-model="number16.from.mm" placeholder="mm" type="text" :hide-details = true :value="`${number16.from.mm}`"></v-text-field>
+                                    </v-col>
                                     <v-col 
                                         cols="2"
                                         md="2"
                                         sm="2"
                                         class="p-0"
                                     >
-                                        <p>MM</p>
-                                        <v-text-field v-model="number9.b.mm" placeholder="mm" type="text" :hide-details = true :value="`${number9.b.mm}`"></v-text-field>
-                                    </v-col>
-                                    <v-col 
-                                        cols="1"
-                                        md="1"
-                                        sm="1"
-                                        class="p-0"
-                                    >
                                         <p>DD</p>
-                                        <v-text-field v-model="number9.b.dd" placeholder="dd" type="text" :hide-details = true :value="`${number9.b.dd}`"></v-text-field>
+                                        <v-text-field v-model="number16.from.dd" placeholder="dd" type="text" :hide-details = true :value="`${number16.from.dd}`"></v-text-field>
                                     </v-col>
                                     <v-col
                                         cols="4"
@@ -392,953 +924,465 @@
                                         class="p-0"
                                     >
                                         <p>YY</p>
-                                        <v-text-field v-model="number9.b.yy" placeholder="yy" type="text" :hide-details = true :value="`${number9.b.yy}`"></v-text-field>
+                                        <v-text-field v-model="number16.from.yy" placeholder="yy" type="text" :hide-details = true :value="`${number16.from.yy}`"></v-text-field>
                                     </v-col>
-                                    <v-col
-                                        cols="5"
-                                        md="5"
-                                        sm="5"
+                                </v-row>
+                            </v-col>
+                            <v-col cols="6" md='6' sm='6'>
+                                <v-row align="center">
+                                    <v-col 
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
                                         class="p-0"
                                     >
-                                        <v-row class="justify-center">SEX</v-row>
-                                        <v-row class="d-flex justify-space-around">
-                                            <div class="d-flex flex-row align-center">
-                                                <p>M</p>
-                                                <v-checkbox v-model="number9.b.sex.male"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber9(0)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            <div class="d-flex flex-row align-center">
-                                                <p>F</p>
-                                                <v-checkbox v-model="number9.b.sex.female"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber9(1)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            
-                                        </v-row>
+                                        <span>TO</span>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2   "
+                                        class="p-0"
+                                    >
+                                        <p>MM</p>
+                                        <v-text-field v-model="number16.to.mm" placeholder="mm" type="text" :hide-details = true :value="`${number16.to.mm}`"></v-text-field>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2"
+                                        class="p-0"
+                                    >
+                                        <p>DD</p>
+                                        <v-text-field v-model="number16.to.dd" placeholder="dd" type="text" :hide-details = true :value="`${number16.to.dd}`"></v-text-field>
+                                    </v-col>
+                                    <v-col
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
+                                    >
+                                        <p>YY</p>
+                                        <v-text-field v-model="number16.to.yy" placeholder="yy" type="text" :hide-details = true :value="`${number16.to.yy}`"></v-text-field>
                                     </v-col>
                                 </v-row>
                             </v-col>
                         </v-row>
+                    </div>
+                    
+                </v-col>
+            </v-row>
+            <!-- Line 9 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col
+                            cols="7"
+                            sm="7"
+                            md="7"
+                        >
+                            <v-row>
+                                <v-col>
+                                    <p>17. NAME OF REFERRING PROVIDER OR OTHER SOURCE</p>
+                                    <v-text-field v-model="number17.value" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.value}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-col>
 
-                        <v-row>
-                            <v-col>
-                                <p>c. EMPLOYER'S NAME OR SCHOOL NAME</p>
-                                <v-text-field v-model="number9.c" placeholder="other insured's policy or group number" type="text" :hide-details = true :value="`${number9.c}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
+                        <v-col
+                            cols="5"
+                            sm="5"
+                            md="5"
+                            class="lb-1"
+                        >
+                            <div class="bb-1">
+                                <v-row>
+                                    <v-col cols='3' md= '3' sm = '3'>17a.</v-col>
+                                    <v-col cols='3' md= '3' sm = '3' class="lb-1">
+                                        <v-text-field v-model="number17.a.first" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.a.first}`"></v-text-field>
+                                    </v-col>
+                                    <v-col cols='6' md= '6' sm = '6' class="lb-1">
+                                        <v-text-field v-model="number17.a.second" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.a.second}`"></v-text-field>
+                                    </v-col>
+                                </v-row>
+                            </div>
+                            <div>
+                                <v-row>
+                                    <v-col cols='3' md= '3' sm = '3'>17a.</v-col>
+                                    <v-col cols='3' md= '3' sm = '3' class="lb-1">17.b</v-col>
+                                    <v-col cols='6' md= '6' sm = '6' class="lb-1"><v-text-field v-model="number17.b" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.b}`"></v-text-field></v-col>
+                                </v-row>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-col>
 
-                    <v-col cols = '5' md = '5' sm = '5' class="lb-1" style="display: flex; flex-direction: column;">
-                        <v-row class="mt-4">{{$data.hcfa.hcfaTitle.line10}}</v-row>
-                        <v-text-field v-model="number10.value" placeholder="enter" type="text" :hide-details = true :value="`${number10.value}`"></v-text-field>
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <div class="d-flex flex-column align-start">
+                        <p>18. HOSPITALIZATION DATES RELATED TO CURRENT SERVICES</p>
                         <v-row>
-                            <v-col class = 'p-0'>
-                                <v-row>{{line10[0].value}}</v-row>
+                            <v-col cols="6" md='6' sm='6'>
                                 <v-row align="center">
-                                    <v-checkbox v-model="number10.a.yes"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="Yes"
-                                        @change="checkNumber10(0)"
+                                    <v-col 
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
                                     >
-                                    </v-checkbox>
-                                    <v-checkbox v-model="number10.a.no"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="No"
-                                        @change="checkNumber10(1)"
+                                        <span>FROM</span>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2   "
+                                        class="p-0"
                                     >
-                                    </v-checkbox>
+                                        <p>MM</p>
+                                        <v-text-field v-model="number18.from.mm" placeholder="mm" type="text" :hide-details = true :value="`${number18.from.mm}`"></v-text-field>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2"
+                                        class="p-0"
+                                    >
+                                        <p>DD</p>
+                                        <v-text-field v-model="number18.from.dd" placeholder="dd" type="text" :hide-details = true :value="`${number18.from.dd}`"></v-text-field>
+                                    </v-col>
+                                    <v-col
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
+                                    >
+                                        <p>YY</p>
+                                        <v-text-field v-model="number18.from.yy" placeholder="yy" type="text" :hide-details = true :value="`${number18.from.yy}`"></v-text-field>
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                            <v-col cols="6" md='6' sm='6'>
+                                <v-row align="center">
+                                    <v-col 
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
+                                    >
+                                        <span>TO</span>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2   "
+                                        class="p-0"
+                                    >
+                                        <p>MM</p>
+                                        <v-text-field v-model="number18.to.mm" placeholder="mm" type="text" :hide-details = true :value="`${number18.to.mm}`"></v-text-field>
+                                    </v-col>
+                                    <v-col 
+                                        cols="2"
+                                        md="2"
+                                        sm="2"
+                                        class="p-0"
+                                    >
+                                        <p>DD</p>
+                                        <v-text-field v-model="number18.to.dd" placeholder="dd" type="text" :hide-details = true :value="`${number18.to.dd}`"></v-text-field>
+                                    </v-col>
+                                    <v-col
+                                        cols="4"
+                                        md="4"
+                                        sm="4"
+                                        class="p-0"
+                                    >
+                                        <p>YY</p>
+                                        <v-text-field v-model="number18.to.yy" placeholder="yy" type="text" :hide-details = true :value="`${number18.to.yy}`"></v-text-field>
+                                    </v-col>
                                 </v-row>
                             </v-col>
                         </v-row>
-                        <v-row>
-                            <v-col class = 'p-0'>
-                                <v-row>{{line10[1].value}}</v-row>
-                                <v-row align="center">
-                                    <v-checkbox v-model="number10.b.yes"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="Yes"
-                                        @change="checkNumber10(2)"
-                                    >
-                                    </v-checkbox>
-                                    <v-checkbox v-model="number10.b.no"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="No"
-                                        @change="checkNumber10(3)"
-                                    >
-                                    </v-checkbox>
-                                    <div class = 'ml-auto'>
-                                        <div class="flex flex-column p-none">
-                                            <div class="f-11">PLACE (State)</div>
-                                            <v-text-field v-model="number10.b.place" placeholder="enter" type="text" :hide-details = true :value="`${number10.b.place}`"></v-text-field>
+                    </div>
+                    
+                </v-col>
+            </v-row>
+            <!-- Line 10 -->
+            <v-row class="bb-1">    
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <p>19. RESERVED FOR LOCAL USE</p>
+                    <v-text-field v-model="number19.value" placeholder="reserved for local use" type="text" :hide-details = true :value="`${number17.value}`"></v-text-field>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <v-row>
+                        <v-col cols='6' md = '6' sm = '6'>
+                            <p>20. OUTSIDE LAB?</p>
+                            <v-row align="center">
+                                <v-checkbox v-model="number20.yes"
+                                    :false-value="0"
+                                    :true-value="1"
+                                    :hide-details = true
+                                    label="Yes"
+                                    @change="checkNumber20(0)"
+                                >
+                                </v-checkbox>
+                                <v-checkbox v-model="number20.no"
+                                    :false-value="0"
+                                    :true-value="1"
+                                    :hide-details = true
+                                    label="No"
+                                    @change="checkNumber20(1)"
+                                >
+                                </v-checkbox>
+                            </v-row>
+                        </v-col>
+                        <v-col cols='6' md = '6' sm = '6'>
+                            <p>$CHARGES</p>
+                            <v-row>
+                                <v-col cols='6' md = '6' sm = '6' class="lb-1">
+                                    <v-text-field v-model="number20.charges.first" placeholder="enter" type="text" :hide-details = true :value="`${number20.charges.first}`"></v-text-field>
+                                </v-col>
+                                <v-col cols='6' md = '6' sm = '6' class="lb-1">
+                                    <v-text-field v-model="number20.charges.second" placeholder="enter" type="text" :hide-details = true :value="`${number20.charges.second}`"></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-col>
+                    </v-row>
+                    
+                </v-col>
+            </v-row>
+            <!-- Line 11 -->
+            <!-- Line 12 -->
+            <v-row v-for="ii in 6" :key="ii" class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col v-for="n in 14" :key="n">
+                            <v-text-field placeholder="enter" type="text" :hide-details = true></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-col>
+
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <v-row>
+                        <v-col v-for="n in 6" :key="n">
+                            <v-text-field placeholder="enter" type="text" :hide-details = true></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-col>
+            </v-row>
+            <!-- Line 13 -->
+            <v-row class="bb-1">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
+                    <v-row>
+                        <v-col cols="5" md = '5' sm = '5'>
+                            <div class="d-flex flex-row">
+                                
+                                <div class="d-flex flex-column">
+                                    <p>25. FEDERAL TAX I.D.NUMBER</p>
+                                    <v-text-field v-model="number25.value" placeholder="enter" type="text" :hide-details = true :value="`${number25.value}`"></v-text-field>
+                                </div>
+
+                                <div class="ml-auto">
+                                    <div class="d-flex flex-row">
+                                        <div class="d-flex flex-column">
+                                            <p>SSN</p>
+                                            <v-checkbox v-model="number25.ssn"
+                                                :false-value="0"
+                                                :true-value="1"
+                                                :hide-details = true
+                                                @change="checkNumber25(0)"
+                                            >
+                                            </v-checkbox>
+                                        </div>
+
+                                        <div class="d-flex flex-column">
+                                            <p>EIN</p>
+                                            <v-checkbox v-model="number25.ein"
+                                                :false-value="0"
+                                                :true-value="1"
+                                                :hide-details = true
+                                                @change="checkNumber25(1)"
+                                            >
+                                            </v-checkbox>
                                         </div>
                                     </div>
-                                </v-row>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col class = 'p-0'>
-                                <v-row>{{line10[2].value}}</v-row>
-                                <v-row align="center">
-                                    <v-checkbox v-model="number10.c.yes"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="Yes"
-                                        @change="checkNumber10(4)"
-                                    >
-                                    </v-checkbox>
+                                </div>
 
-                                    <v-checkbox v-model="number10.c.no"
-                                        :false-value="0"
-                                        :true-value="1"
-                                        :hide-details = true
-                                        label="No"
-                                        @change="checkNumber10(5)"
-                                    >
-                                    </v-checkbox>
-                                </v-row>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-                
-            </v-col>
+                            </div>
+                        </v-col>
+                        <v-col cols="4" md='4' sm='4' class="lb-1">
+                            <p>26. PATIENT'S ACCOUNT NO.</p>
+                            <v-text-field v-model="number26.value" placeholder="enter" type="text" :hide-details = true :value="`${number26.value}`"></v-text-field>
+                        </v-col>
+                        <v-col cols="3" md='3' sm='3' class="lb-1">
+                            <p>27. PATIENT'S NAME(Last Name, First Name, Middle Initial)</p>
+                            <p>(For govt, claims see back)</p>
+                            <div class="d-flex flex-row">
+                                <v-checkbox v-model="number27.yes"
+                                    :false-value="0"
+                                    :true-value="1"
+                                    :hide-details = true
+                                    label="Yes"
+                                    @change="checkNumber27(0)"
+                                >
+                                </v-checkbox>
+                                <v-checkbox v-model="number27.no"
+                                    :false-value="0"
+                                    :true-value="1"
+                                    :hide-details = true
+                                    label="No"
+                                    @change="checkNumber27(1)"
+                                >
+                                </v-checkbox>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-col>
 
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <v-row>
-                    <v-col>
-                        <v-row>
-                            <v-col>
-                                <p>11. INSURED'S POLICY GROUP OR FECA NUMBER</p>
-                                <v-text-field v-model="number11.value" placeholder="other insured's name" type="text" :hide-details = true :value="`${number11.value}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col>
-                                <p>a. INSURED'S DATE OF BIRTH</p>
-                                <v-row>
-                                    <v-col 
-                                        cols="2"
-                                        md="2"
-                                        sm="2"
-                                        class="p-0"
-                                    >
-                                        <p>MM</p>
-                                        <v-text-field v-model="number11.a.mm" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.mm}`"></v-text-field>
-                                    </v-col>
-                                    <v-col 
-                                        cols="1"
-                                        md="1"
-                                        sm="1"
-                                        class="p-0"
-                                    >
-                                        <p>DD</p>
-                                        <v-text-field v-model="number11.a.dd" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.dd}`"></v-text-field>
-                                    </v-col>
-                                    <v-col
-                                        cols="4"
-                                        md="4"
-                                        sm="4"
-                                        class="p-0"
-                                    >
-                                        <p>YY</p>
-                                        <v-text-field v-model="number11.a.yy" placeholder="mm" type="text" :hide-details = true :value="`${number11.a.yy}`"></v-text-field>
-                                    </v-col>
-                                    <v-col
-                                        cols="5"
-                                        md="5"
-                                        sm="5"
-                                        class="p-0"
-                                    >
-                                        <v-row class="justify-center">SEX</v-row>
-                                        <v-row class="d-flex justify-space-around">
-                                            <div class="d-flex flex-row align-center">
-                                                <p>M</p>
-                                                <v-checkbox v-model="number11.a.sex.male"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber11(0)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            <div class="d-flex flex-row align-center">
-                                                <p>F</p>
-                                                <v-checkbox v-model="number11.a.sex.female"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber11(1)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            
-                                        </v-row>
-                                    </v-col>
-                                </v-row>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col>
-                                <p>b. EMPLOYER'S NAME OR SCHOOL NAME</p>
-                                <v-text-field v-model="number11.b" placeholder="mm" type="text" :hide-details = true :value="`${number11.b}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-
-                        <v-row>
-                            <v-col>
-                                <p>c. INSURANCE PLAN NAME OR PROGRAM NAME</p>
-                                <v-text-field v-model="number11.c" placeholder="mm" type="text" :hide-details = true :value="`${number11.c}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-            </v-col>
-        </v-row>
-         <!-- Line 6 -->
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <v-row>
+                        <v-col>
+                            <p>28. TOTAL CHARGE</p>
+                            <v-text-field v-model="number28.value" placeholder="enter" type="text" :hide-details = true :value="`${number28.value}`"></v-text-field>
+                        </v-col>
+                        <v-col class="lb-1">
+                            <p>29. AMOUNT PAID</p>
+                            <v-text-field v-model="number29.value" placeholder="enter" type="text" :hide-details = true :value="`${number29.value}`"></v-text-field>
+                        </v-col>
+                        <v-col class="lb-1">
+                            <p>30. BALANCE DUE</p>
+                            <v-text-field v-model="number30.value" placeholder="enter" type="text" :hide-details = true :value="`${number30.value}`"></v-text-field>
+                        </v-col>
+                    </v-row>
+                </v-col>
+            </v-row>
+            <!-- Line 14 -->
             <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col
-                        cols="7"
-                        sm="7"
-                        md="7"
-                    >
-                        <p>d. INSURANCE PLAN NAME OR PROGRAM NAME</p>
-                        <v-text-field v-model="number9.d" placeholder="patient name" type="text" :hide-details = true :value="`${number9.d}`"></v-text-field>
-                    </v-col>
-
-                    <v-col
-                        cols="5"
-                        sm="5"
-                        md="5"
-                        class="lb-1"
-                    >
-                        <p>10d. RESERVED FOR LOCAL USE</p>
-                        <v-text-field v-model="number10.d" placeholder="patient name" type="text" :hide-details = true :value="`${number10.d}`"></v-text-field>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <div class="d-flex flex-column align-start">
-                    <p>d. IS THERE ANOTHER HEALTH BENEFIT PLAN?</p>
-                    <div class="d-flex flex-row align-center">
-                        <v-checkbox v-model="number11.d.yes"
-                            :false-value="0"
-                            :true-value="1"
-                            :hide-details = true
-                            label="Yes"
-                            @change="checkNumber11(2)"
-                        >
-                        </v-checkbox>
-                        <v-checkbox v-model="number11.d.no"
-                            :false-value="0"
-                            :true-value="1"
-                            :hide-details = true
-                            label="No"
-                            @change="checkNumber11(3)"
-                        >
-                        </v-checkbox>
-                        <span class="f-11 ml-auto"><b>If yes</b>, return to and complete item 9 a-d</span>
-                    </div>
-                </div>
-                
-            </v-col>
-        </v-row>
-        <!-- Line 7 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >   
-                <b>READ BACK OF FORM BEFORE COMPLETING & SIGNING THIS FORM</b>
-                <p>12. PATIENT'S OR AUTHORIZED PERSON'S SIGNATURE I authorize the release of any medical or other information necessary to process this claim. I also request payment of government benefits either to myself or to the party who accepts assignment below</p>
-                <div class="d-flex align-center">
+                <v-col
+                    cols="8"
+                    sm="8"
+                    md="8"
+                >
                     <v-row>
-                        <v-col cols="8" md = '8' sm = '8'>
-                            <div class="d-flex flex-direction-row align-center">
-                                <div class="mr-2">SIGNED</div>
-                                <v-text-field v-model="number12.signed" placeholder="signed" type="text" :hide-details = true :value="`${number12.signed}`"></v-text-field>
+                        <v-col cols="5" md = '5' sm = '5'>
+                            <div class="d-flex flex-row">
+                                
+                                <div class="d-flex flex-column">
+                                    <p>31. SIGNATURE OF PHYSICIAN OR SUPPLIER INCLUDING DEGREES OR CREDENTIALS</p>
+                                    <p>(I certify that the statements on the reverse apply to this bill and are made a part thereof.)</p>
+                                    <!-- <v-text-field v-model="number31.value" placeholder="enter" type="text" :hide-details = true :value="`${number31.value}`"></v-text-field> -->
+                                    <p class="pt-5 bb-1">{{$data.number31.value}}</p>
+                                </div>
+
                             </div>
                         </v-col>
-                        <v-col cols="4" md = '4' sm = '4'>
-                            <div class="d-flex flex-direction-row align-center">
-                                <div class="mr-2">DATE</div>
-                                <v-text-field v-model="number12.date" placeholder="date" type="text" :hide-details = true :value="`${number12.date}`"></v-text-field>
-                            </div>
-                        </v-col>
-                    </v-row>
-                </div>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <p>13. INSURED'S OR AUTHORIZED PERSON'S SIGNATURE I authorize payment of medical benefits to the undersigned physician or supplier for services described below.</p>
-                <div class="d-flex flex-direction-row align-center">
-                    <div class="mr-2">SIGNED</div>
-                    <v-text-field v-model="number13.value" placeholder="signed" type="text" :hide-details = true :value="`${number13.value}`"></v-text-field>
-                </div>
-            </v-col>
-        </v-row>
-        <!-- Line 8 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col
-                        cols="7"
-                        sm="7"
-                        md="7"
-                    >
-                        <v-row>
-                            <v-col cols="7" md = '7' sm = '7'>
-                                <p>14. DATE OF CURRENT:</p>
-                                <v-row>
-                                    <v-col 
-                                        cols="2"
-                                        md="2"
-                                        sm="2"
-                                        class="p-0"
-                                    >
-                                        <p>MM</p>
-                                        <v-text-field v-model="number14.mm" placeholder="mm" type="text" :hide-details = true :value="`${number14.mm}`"></v-text-field>
-                                    </v-col>
-                                    <v-col 
-                                        cols="2"
-                                        md="2"
-                                        sm="2"
-                                        class="p-0"
-                                    >
-                                        <p>DD</p>
-                                        <v-text-field v-model="number14.dd" placeholder="dd" type="text" :hide-details = true :value="`${number14.dd}`"></v-text-field>
-                                    </v-col>
-                                    <v-col
-                                        cols="4"
-                                        md="4"
-                                        sm="4"
-                                        class="p-0"
-                                    >
-                                        <p>YY</p>
-                                        <v-text-field v-model="number14.yy" placeholder="yy" type="text" :hide-details = true :value="`${number14.yy}`"></v-text-field>
-                                    </v-col>
-                                    <v-col
-                                        cols="4"
-                                        md="4"
-                                        sm="4"
-                                        class="p-0"
-                                    >
-                                        <v-row class="justify-center">SEX</v-row>
-                                        <v-row class="d-flex justify-space-around">
-                                            <div class="d-flex flex-row align-center">
-                                                <p>M</p>
-                                                <v-checkbox v-model="number14.sex.male"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber14(0)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            <div class="d-flex flex-row align-center">
-                                                <p>F</p>
-                                                <v-checkbox v-model="number14.sex.female"
-                                                    :false-value="0"
-                                                    :true-value="1"
-                                                    :hide-details = true
-                                                    @change="checkNumber14(1)"
-                                                >
-                                                </v-checkbox>
-                                            </div>
-                                            
-                                        </v-row>
-                                    </v-col>
-                                </v-row>
-                            </v-col>
-                            <v-col cols="5" md = '5' sm = '5' class="lb-1">
-                                <p>ILLNESS (First symptom) OR</p>
-                                <p>INJURY (Accident) OR</p>
-                                <p>PREGNANCY (LMP) OR</p>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-
-                    <v-col
-                        cols="5"
-                        sm="5"
-                        md="5"
-                        class="lb-1"
-                    >
-                        <p>15. IF PATIENT HAS HAD SAME OR SIMILAR ILLNESS</p>
-                        <v-row align="center">
-                            <v-col 
-                                cols="4"
-                                md="4"
-                                sm="4"
-                                class="p-0"
-                            >
-                                <span>GIVE FIRST DATE</span>
-                            </v-col>
-                            <v-col 
-                                cols="2"
-                                md="2"
-                                sm="2   "
-                                class="p-0"
-                            >
-                                <p>MM</p>
-                                <v-text-field v-model="number15.mm" placeholder="mm" type="text" :hide-details = true :value="`${number15.mm}`"></v-text-field>
-                            </v-col>
-                            <v-col 
-                                cols="2"
-                                md="2"
-                                sm="2"
-                                class="p-0"
-                            >
-                                <p>DD</p>
-                                <v-text-field v-model="number15.dd" placeholder="dd" type="text" :hide-details = true :value="`${number15.dd}`"></v-text-field>
-                            </v-col>
-                            <v-col
-                                cols="4"
-                                md="4"
-                                sm="4"
-                                class="p-0"
-                            >
-                                <p>YY</p>
-                                <v-text-field v-model="number15.yy" placeholder="yy" type="text" :hide-details = true :value="`${number15.yy}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <div class="d-flex flex-column align-start">
-                    <p>16. DATES PATIENT UNABLE TO WORK IN CURRENT OCCUPATION</p>
-                    <v-row>
-                        <v-col cols="6" md='6' sm='6'>
-                            <v-row align="center">
-                                <v-col 
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <span>FROM</span>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2   "
-                                    class="p-0"
-                                >
-                                    <p>MM</p>
-                                    <v-text-field v-model="number16.from.mm" placeholder="mm" type="text" :hide-details = true :value="`${number16.from.mm}`"></v-text-field>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2"
-                                    class="p-0"
-                                >
-                                    <p>DD</p>
-                                    <v-text-field v-model="number16.from.dd" placeholder="dd" type="text" :hide-details = true :value="`${number16.from.dd}`"></v-text-field>
-                                </v-col>
-                                <v-col
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <p>YY</p>
-                                    <v-text-field v-model="number16.from.yy" placeholder="yy" type="text" :hide-details = true :value="`${number16.from.yy}`"></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                        <v-col cols="6" md='6' sm='6'>
-                            <v-row align="center">
-                                <v-col 
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <span>TO</span>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2   "
-                                    class="p-0"
-                                >
-                                    <p>MM</p>
-                                    <v-text-field v-model="number16.to.mm" placeholder="mm" type="text" :hide-details = true :value="`${number16.to.mm}`"></v-text-field>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2"
-                                    class="p-0"
-                                >
-                                    <p>DD</p>
-                                    <v-text-field v-model="number16.to.dd" placeholder="dd" type="text" :hide-details = true :value="`${number16.to.dd}`"></v-text-field>
-                                </v-col>
-                                <v-col
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <p>YY</p>
-                                    <v-text-field v-model="number16.to.yy" placeholder="yy" type="text" :hide-details = true :value="`${number16.to.yy}`"></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                    </v-row>
-                </div>
-                
-            </v-col>
-        </v-row>
-        <!-- Line 9 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col
-                        cols="7"
-                        sm="7"
-                        md="7"
-                    >
-                        <v-row>
-                            <v-col>
-                                <p>17. NAME OF REFERRING PROVIDER OR OTHER SOURCE</p>
-                                <v-text-field v-model="number17.value" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.value}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-
-                    <v-col
-                        cols="5"
-                        sm="5"
-                        md="5"
-                        class="lb-1"
-                    >
-                        <div class="bb-1">
-                            <v-row>
-                                <v-col cols='3' md= '3' sm = '3'>17a.</v-col>
-                                <v-col cols='3' md= '3' sm = '3' class="lb-1">
-                                    <v-text-field v-model="number17.a.first" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.a.first}`"></v-text-field>
-                                </v-col>
-                                <v-col cols='6' md= '6' sm = '6' class="lb-1">
-                                    <v-text-field v-model="number17.a.second" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.a.second}`"></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </div>
-                        <div>
-                            <v-row>
-                                <v-col cols='3' md= '3' sm = '3'>17a.</v-col>
-                                <v-col cols='3' md= '3' sm = '3' class="lb-1">17.b</v-col>
-                                <v-col cols='6' md= '6' sm = '6' class="lb-1"><v-text-field v-model="number17.b" placeholder="name of referring provider or other source" type="text" :hide-details = true :value="`${number17.b}`"></v-text-field></v-col>
-                            </v-row>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <div class="d-flex flex-column align-start">
-                    <p>18. HOSPITALIZATION DATES RELATED TO CURRENT SERVICES</p>
-                    <v-row>
-                        <v-col cols="6" md='6' sm='6'>
-                            <v-row align="center">
-                                <v-col 
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <span>FROM</span>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2   "
-                                    class="p-0"
-                                >
-                                    <p>MM</p>
-                                    <v-text-field v-model="number18.from.mm" placeholder="mm" type="text" :hide-details = true :value="`${number18.from.mm}`"></v-text-field>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2"
-                                    class="p-0"
-                                >
-                                    <p>DD</p>
-                                    <v-text-field v-model="number18.from.dd" placeholder="dd" type="text" :hide-details = true :value="`${number18.from.dd}`"></v-text-field>
-                                </v-col>
-                                <v-col
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <p>YY</p>
-                                    <v-text-field v-model="number18.from.yy" placeholder="yy" type="text" :hide-details = true :value="`${number18.from.yy}`"></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                        <v-col cols="6" md='6' sm='6'>
-                            <v-row align="center">
-                                <v-col 
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <span>TO</span>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2   "
-                                    class="p-0"
-                                >
-                                    <p>MM</p>
-                                    <v-text-field v-model="number18.to.mm" placeholder="mm" type="text" :hide-details = true :value="`${number18.to.mm}`"></v-text-field>
-                                </v-col>
-                                <v-col 
-                                    cols="2"
-                                    md="2"
-                                    sm="2"
-                                    class="p-0"
-                                >
-                                    <p>DD</p>
-                                    <v-text-field v-model="number18.to.dd" placeholder="dd" type="text" :hide-details = true :value="`${number18.to.dd}`"></v-text-field>
-                                </v-col>
-                                <v-col
-                                    cols="4"
-                                    md="4"
-                                    sm="4"
-                                    class="p-0"
-                                >
-                                    <p>YY</p>
-                                    <v-text-field v-model="number18.to.yy" placeholder="yy" type="text" :hide-details = true :value="`${number18.to.yy}`"></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                    </v-row>
-                </div>
-                
-            </v-col>
-        </v-row>
-        <!-- Line 10 -->
-        <v-row class="bb-1">    
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <p>19. RESERVED FOR LOCAL USE</p>
-                <v-text-field v-model="number19.value" placeholder="reserved for local use" type="text" :hide-details = true :value="`${number17.value}`"></v-text-field>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <v-row>
-                    <v-col cols='6' md = '6' sm = '6'>
-                        <p>20. OUTSIDE LAB?</p>
-                        <v-row align="center">
-                            <v-checkbox v-model="number20.yes"
-                                :false-value="0"
-                                :true-value="1"
-                                :hide-details = true
-                                label="Yes"
-                                @change="checkNumber20(0)"
-                            >
-                            </v-checkbox>
-                            <v-checkbox v-model="number20.no"
-                                :false-value="0"
-                                :true-value="1"
-                                :hide-details = true
-                                label="No"
-                                @change="checkNumber20(1)"
-                            >
-                            </v-checkbox>
-                        </v-row>
-                    </v-col>
-                    <v-col cols='6' md = '6' sm = '6'>
-                        <p>$CHARGES</p>
-                        <v-row>
-                            <v-col cols='6' md = '6' sm = '6' class="lb-1">
-                                <v-text-field v-model="number20.charges.first" placeholder="enter" type="text" :hide-details = true :value="`${number20.charges.first}`"></v-text-field>
-                            </v-col>
-                            <v-col cols='6' md = '6' sm = '6' class="lb-1">
-                                <v-text-field v-model="number20.charges.second" placeholder="enter" type="text" :hide-details = true :value="`${number20.charges.second}`"></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
-                
-            </v-col>
-        </v-row>
-        <!-- Line 11 -->
-        <!-- Line 12 -->
-        <v-row v-for="ii in 6" :key="ii" class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col v-for="n in 14" :key="n">
-                        <v-text-field placeholder="enter" type="text" :hide-details = true></v-text-field>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <v-row>
-                    <v-col v-for="n in 6" :key="n">
-                        <v-text-field placeholder="enter" type="text" :hide-details = true></v-text-field>
-                    </v-col>
-                </v-row>
-            </v-col>
-        </v-row>
-        <!-- Line 13 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col cols="5" md = '5' sm = '5'>
-                        <div class="d-flex flex-row">
-                            
+                        <v-col cols="7" md='7' sm='7' class="lb-1">
                             <div class="d-flex flex-column">
-                                <p>25. FEDERAL TAX I.D.NUMBER</p>
-                                <v-text-field v-model="number25.value" placeholder="enter" type="text" :hide-details = true :value="`${number25.value}`"></v-text-field>
+                                <p>32. SERVICE FACILITY LOCATION INFORMATION</p>
+                                <!-- <v-text-field v-model="number32.value" placeholder="service facility location information" type="text" :hide-details = true :value="`${number32.value}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number32.value}}</p>
                             </div>
 
-                            <div class="ml-auto">
-                                <div class="d-flex flex-row">
-                                    <div class="d-flex flex-column">
-                                        <p>SSN</p>
-                                        <v-checkbox v-model="number25.ssn"
-                                            :false-value="0"
-                                            :true-value="1"
-                                            :hide-details = true
-                                            @change="checkNumber25(0)"
-                                        >
-                                        </v-checkbox>
+                            <v-row>
+                                <v-col cols="6" md = '6' sm = '6'>
+                                    <div class="d-flex flex-row align-center">
+                                        <p class="mr-3">a. </p>
+                                        <!-- <v-text-field v-model="number32.a" placeholder="enter" type="text" :hide-details = true :value="`${number32.a}`"></v-text-field> -->
+                                        <p class="pt-5 bb-1">{{$data.number32.a}}</p>
                                     </div>
-
-                                    <div class="d-flex flex-column">
-                                        <p>EIN</p>
-                                        <v-checkbox v-model="number25.ein"
-                                            :false-value="0"
-                                            :true-value="1"
-                                            :hide-details = true
-                                            @change="checkNumber25(1)"
-                                        >
-                                        </v-checkbox>
+                                </v-col>
+                                <v-col cols="6" md = '6' sm = '6'>
+                                    <div class="d-flex flex-row align-center">
+                                        <p class="mr-3">b. </p>
+                                        <!-- <v-text-field v-model="number32.b" placeholder="enter" type="text" :hide-details = true :value="`${number32.b}`"></v-text-field> -->
+                                        <p class="pt-5 bb-1">{{$data.number32.b}}</p>
                                     </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </v-col>
-                    <v-col cols="4" md='4' sm='4' class="lb-1">
-                        <p>26. PATIENT'S ACCOUNT NO.</p>
-                        <v-text-field v-model="number26.value" placeholder="enter" type="text" :hide-details = true :value="`${number26.value}`"></v-text-field>
-                    </v-col>
-                    <v-col cols="3" md='3' sm='3' class="lb-1">
-                        <p>27. PATIENT'S NAME(Last Name, First Name, Middle Initial)</p>
-                        <p>(For govt, claims see back)</p>
-                        <div class="d-flex flex-row">
-                            <v-checkbox v-model="number27.yes"
-                                :false-value="0"
-                                :true-value="1"
-                                :hide-details = true
-                                label="Yes"
-                                @change="checkNumber27(0)"
-                            >
-                            </v-checkbox>
-                            <v-checkbox v-model="number27.no"
-                                :false-value="0"
-                                :true-value="1"
-                                :hide-details = true
-                                label="No"
-                                @change="checkNumber27(1)"
-                            >
-                            </v-checkbox>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-col>
-
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <v-row>
-                    <v-col>
-                        <p>28. TOTAL CHARGE</p>
-                        <v-text-field v-model="number28.value" placeholder="enter" type="text" :hide-details = true :value="`${number28.value}`"></v-text-field>
-                    </v-col>
-                    <v-col class="lb-1">
-                        <p>29. AMOUNT PAID</p>
-                        <v-text-field v-model="number29.value" placeholder="enter" type="text" :hide-details = true :value="`${number29.value}`"></v-text-field>
-                    </v-col>
-                    <v-col class="lb-1">
-                        <p>30. BALANCE DUE</p>
-                        <v-text-field v-model="number30.value" placeholder="enter" type="text" :hide-details = true :value="`${number30.value}`"></v-text-field>
-                    </v-col>
-                </v-row>
-            </v-col>
-        </v-row>
-        <!-- Line 14 -->
-        <v-row class="bb-1">
-            <v-col
-                cols="8"
-                sm="8"
-                md="8"
-            >
-                <v-row>
-                    <v-col cols="5" md = '5' sm = '5'>
-                        <div class="d-flex flex-row">
+                                </v-col>
+                            </v-row>
                             
-                            <div class="d-flex flex-column">
-                                <p>31. SIGNATURE OF PHYSICIAN OR SUPPLIER INCLUDING DEGREES OR CREDENTIALS</p>
-                                <p>(I certify that the statements on the reverse apply to this bill and are made a part thereof.)</p>
-                                <v-text-field v-model="number31.value" placeholder="enter" type="text" :hide-details = true :value="`${number31.value}`"></v-text-field>
-                            </div>
-
-                        </div>
-                    </v-col>
-                    <v-col cols="7" md='7' sm='7' class="lb-1">
-                        <div class="d-flex flex-column">
-                            <p>32. SERVICE FACILITY LOCATION INFORMATION</p>
-                            <v-text-field v-model="number32.value" placeholder="service facility location information" type="text" :hide-details = true :value="`${number32.value}`"></v-text-field>
-                        </div>
-
-                        <v-row>
-                            <v-col cols="6" md = '6' sm = '6'>
-                                <div class="d-flex flex-row align-center">
-                                    <p class="mr-3">a. </p>
-                                    <v-text-field v-model="number32.a" placeholder="enter" type="text" :hide-details = true :value="`${number32.a}`"></v-text-field>
-                                </div>
-                            </v-col>
-                            <v-col cols="6" md = '6' sm = '6'>
-                                <div class="d-flex flex-row align-center">
-                                    <p class="mr-3">b. </p>
-                                    <v-text-field v-model="number32.b" placeholder="enter" type="text" :hide-details = true :value="`${number32.b}`"></v-text-field>
-                                </div>
-                            </v-col>
-                        </v-row>
+                        </v-col>
                         
-                    </v-col>
-                    
-                </v-row>
-            </v-col>
+                    </v-row>
+                </v-col>
 
-            <v-col
-                cols="4"
-                sm="4"
-                md="4"
-                class="lb-1"
-            >
-                <div class="d-flex flex-column">
-                    <p>33. BILLING PROVIDER INFO & INFO & PH # ( )</p>
-                    <v-text-field v-model="number33.value" placeholder="service facility location information" type="text" :hide-details = true :value="`${number33.value}`"></v-text-field>
-                </div>
+                <v-col
+                    cols="4"
+                    sm="4"
+                    md="4"
+                    class="lb-1"
+                >
+                    <div class="d-flex flex-column">
+                        <p>33. BILLING PROVIDER INFO & INFO & PH # ( )</p>
+                        <!-- <v-text-field v-model="number33.value" placeholder="service facility location information" type="text" :hide-details = true :value="`${number33.value}`"></v-text-field> -->
+                        <p class="pt-5 bb-1">{{$data.number33.value}}</p>
+                    </div>
 
-                <v-row>
-                    <v-col cols="6" md = '6' sm = '6'>
-                        <div class="d-flex flex-row align-center">
-                            <p class="mr-3">a. </p>
-                            <v-text-field v-model="number33.a" placeholder="enter" type="text" :hide-details = true :value="`${number33.a}`"></v-text-field>
-                        </div>
-                    </v-col>
-                    <v-col cols="6" md = '6' sm = '6'>
-                        <div class="d-flex flex-row align-center">
-                            <p class="mr-3">b. </p>
-                            <v-text-field v-model="number33.b" placeholder="enter" type="text" :hide-details = true :value="`${number33.b}`"></v-text-field>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-col>
-        </v-row>
-  </div>
+                    <v-row>
+                        <v-col cols="6" md = '6' sm = '6'>
+                            <div class="d-flex flex-row align-center">
+                                <p class="mr-3">a. </p>
+                                <!-- <v-text-field v-model="number33.a" placeholder="enter" type="text" :hide-details = true :value="`${number33.a}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number33.a}}</p>
+                            </div>
+                        </v-col>
+                        <v-col cols="6" md = '6' sm = '6'>
+                            <div class="d-flex flex-row align-center">
+                                <p class="mr-3">b. </p>
+                                <!-- <v-text-field v-model="number33.b" placeholder="enter" type="text" :hide-details = true :value="`${number33.b}`"></v-text-field> -->
+                                <p class="pt-5 bb-1">{{$data.number33.b}}</p>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-col>
+            </v-row>
+        </div>
+    </div>
 </div>
 </template>
 
 <script>
+import userRoleMixin from "~/mixins/userRoleMixin";
+import inputMixin from '~/mixins/inputMixin'
+import authMixin from '~/mixins/authMixin'
+import uploadMixin from '~/mixins/uploadMixin'
 
 export default {
+    mixins: [userRoleMixin, inputMixin, authMixin, uploadMixin],
+    middleware: ['authenticated', 'not-blocked', 'not-deleted', 'verified'],
     data() {
         return {
             hcfa: {
@@ -1617,52 +1661,87 @@ export default {
                 b: '',
             },
             isLoading: true,
+
+            patientList: [],
+            patientIdList: [],
+            currentName: {user_uuid: null, user_last_name: null, user_first_name: null},
+            isOpen: false,
         }
     },
 
     mounted() {
-        console.log(this.number11.a.sex.male);
-        this.$api.get(`/hcfa/?id=79a0dd09-4750-4c00-937c-0d7353f5766a`).then((res) => {
-            if(res?.status === 200 && res.data){
-                this.number1 = res.data.number1;
-                this.number2 = res.data.number2;
-                this.number3 = res.data.number3;
-                this.number4 = res.data.number4;
-                this.number5 = res.data.number5;
-                this.number6 = res.data.number6;
-                this.number7 = res.data.number7;
-                this.number8 = res.data.number8;
-                this.number9 = res.data.number9;
-                this.number10 = res.data.number10;
-                this.number11 = res.data.number11;
-                this.number12 = res.data.number12;
-                this.number13 = res.data.number13;
-                this.number14 = res.data.number14;
-                this.number15 = res.data.number15;
-                this.number16 = res.data.number16;
-                this.number17 = res.data.number17;
-                this.number18 = res.data.number18;
-                this.number19 = res.data.number19;
-                this.number20 = res.data.number20;
-                this.number25 = res.data.number25;
-                this.number26 = res.data.number26;
-                this.number27 = res.data.number27;
-                this.number28 = res.data.number28;
-                this.number29 = res.data.number29;
-                this.number30 = res.data.number30;
-                this.number31 = res.data.number31;
-                this.number32 = res.data.number32;
-                this.number33 = res.data.number33;
-            }else{
-                this.init();
-            }
-        }).catch(() => {
-            this.$toast.error('loading error')
-        })
-        this.isLoading = false;
+        this.$api.get(`/hcfa/patients`).then((res) => {
+                if(res?.status === 200 && res.data){
+                    this.patientList = res.data;
+                }else{
+                    this.init();
+                }
+            }).catch(() => {
+                this.$toast.error('loading error')
+            })
+        
     },
     methods: 
     {
+        openHcfa(){
+            if(this.currentName === null || this.currentName?.user_uuid === null) return;
+            this.$api.get(`/hcfa/?id=${this.$auth.user.uuid}&patientId=${this.currentName.user_uuid}`).then((res) => {
+                console.log('response', res.status, res.data)
+                if(res?.status === 200 && res.data){
+                    if(res.data.hcfa_info){
+                        const info = res.data.hcfa_info;
+                        this.number1 = info.number1;
+                        this.number2 = info.number2;
+                        this.number3 = info.number3;
+                        this.number4 = info.number4;
+                        this.number5 = info.number5;
+                        this.number6 = info.number6;
+                        this.number7 = info.number7;
+                        this.number8 = info.number8;
+                        this.number9 = info.number9;
+                        this.number10 = info.number10;
+                        this.number11 = info.number11;
+                        this.number12 = info.number12;
+                        this.number13 = info.number13;
+                        this.number14 = info.number14;
+                        this.number15 = info.number15;
+                        this.number16 = info.number16;
+                        this.number17 = info.number17;
+                        this.number18 = info.number18;
+                        this.number19 = info.number19;
+                        this.number20 = info.number20;
+                        this.number25 = info.number25;
+                        this.number26 = info.number26;
+                        this.number27 = info.number27;
+                        this.number28 = info.number28;
+                        this.number29 = info.number29;
+                        this.number30 = info.number30;
+                        this.number31 = info.number31;
+                        this.number32 = info.number32;
+                        this.number33 = info.number33;
+                    }
+                    this.number4.insuredName = res.data.user_last_name + ' ' + res.data.user_first_name;
+                    this.number7.insuredAddress = res.data.addr_line1;
+                    this.number7.insuredCity = res.data.addr_city;
+                    this.number7.insuredState = res.data.addr_state;
+                    this.number7.insuredZipcode = res.data.addr_zip;
+                    this.number7.insuredTelephone = res.data.user_phone_no;
+                    this.number31.value = res.data.addr_line1;
+                    this.number32.value = res.data.addr_line1;
+                    this.number32.a = res.data.addr_line1;
+                    this.number32.b = res.data.addr_line1;
+                    this.number33.value = res.data.addr_line1;
+                    this.number33.a = res.data.addr_line1;
+                    this.number33.b = res.data.addr_line1;
+                }else{
+                    this.init();
+                }
+            }).catch(() => {
+                this.$toast.error('loading error')
+            })
+            this.isLoading = false;
+        },
+
         checkNumber1(index){
             for(let i = 0; i <= 6; i++){
                 if(index === i){
@@ -2200,7 +2279,7 @@ export default {
 
         async created() {
             // POST request using axios with async/await
-            const sendingData = { id: '79a0dd09-4750-4c00-937c-0d7353f5766a', hcfaInfo: {
+            const sendingData = { id: this.$auth.user.uuid, patientId: this.currentName.user_uuid, hcfaInfo: {
                 number1: this.number1, number2: this.number2, number3: this.number3, number4: this.number4,
                 number5: this.number5, number6: this.number6, number7: this.number7, number8: this.number8,
                 number9: this.number9, number10: this.number10, number11: this.number11, number12: this.number12,
@@ -2285,6 +2364,10 @@ export default {
     p{
         padding: 0px;
         margin: 0px;
+    }
+
+    .w-25{
+        width: 25;
     }
         
 
