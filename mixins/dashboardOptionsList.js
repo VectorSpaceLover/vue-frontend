@@ -61,6 +61,14 @@ export default {
           icon: 'forum',
           dark: true,
         })
+        i.push({
+            shortTitle: 'Claims',
+            cardTitle: 'Claims',
+            to: '/hcfa',
+            btnText: 'Claims',
+            icon: 'card-text',
+            dark: true,
+        })
       }
       if (this.isAdminOrSuper) {
         i.push(
@@ -141,6 +149,14 @@ export default {
             btnText: 'Archived users',
             icon: 'folder-account',
             type: 'primary',
+          },
+          {
+            shortTitle: 'Claims',
+            cardTitle: 'Claims',
+            to: '/hcfa',
+            btnText: 'Claims',
+            icon: 'card-text',
+            dark: true,
           }
         )
       }
